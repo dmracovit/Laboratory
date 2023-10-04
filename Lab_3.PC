@@ -1,0 +1,113 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+// Function to print an array
+void printArray(int arr[], int n) {
+    for (int i = 0; i < n; i++) {
+        printf("%d ", arr[i]);
+    }
+    printf("\n");
+}
+
+// Function to print a 2D matrix
+void printMatrix(int mat[][100], int N, int M) {
+    for (int i = 0; i < N; i++) {
+        for (int j = 0; j < M; j++) {
+            printf("%d ", mat[i][j]);
+        }
+        printf("\n");
+    }
+}
+
+// Function to fill the matrix in the desired spiral pattern.
+void fillSpiralPattern(int *arr, int N, int M, int mat[100][100]) {
+    int top = 0, bottom = N - 1, left = 0, right = M - 1;
+    int index = 0;
+
+    while (top <= bottom && left <= right) {
+        for (int i = left; i <= right && index < N*M; i++) {
+            mat[top][i] = arr[index++];
+        }
+        top++;
+
+        for (int i = top; i <= bottom && index < N*M; i++) {
+            mat[i][right] = arr[index++];
+        }
+        right--;
+
+        for (int i = right; i >= left && index < N*M; i--) {
+            mat[bottom][i] = arr[index++];
+        }
+        bottom--;
+
+        for (int i = bottom; i >= top && index < N*M; i--) {
+            mat[i][left] = arr[index++];
+        }
+        left++;
+    }
+}
+
+// Quick Sort algorithm
+int partition(int arr[], int low, int high) {
+    int pivot = arr[high];
+    int i = (low - 1);
+
+    for (int j = low; j <= high - 1; j++) {
+        if (arr[j] < pivot) {
+            i++;
+            // Swap arr[i] and arr[j]
+            int temp = arr[i];
+            arr[i] = arr[j];
+            arr[j] = temp;
+        }
+    }
+    // Swap arr[i+1] and arr[high] (pivot)
+    int temp = arr[i + 1];
+    arr[i + 1] = arr[high];
+    arr[high] = temp;
+    return (i + 1);
+}
+
+void quickSort(int arr[], int low, int high) {
+    if (low < high) {
+        int pi = partition(arr, low, high);
+        quickSort(arr, low, pi - 1);
+        quickSort(arr, pi + 1, high);
+    }
+}
+
+int main() {
+    int N, M;
+    printf("Input number of columns (N): ");
+    scanf("%d", &N);
+    printf("Input number of rows (M): ");
+    scanf("%d", &M);
+    int n = N * M; // Number of elements in the array
+    int arr[n];
+    printf("\n");
+
+    // Generate a random array of N * M elements between 1 and 1000
+    for (int i = 0; i < n; i++) {
+        arr[i] = rand() % 1000 + 1;
+    }
+
+    // Initial Array
+    printf("Initial Array: \n");
+    printArray(arr, n);
+    printf("\n");
+
+    // Quick Sort
+    quickSort(arr, 0, n - 1);
+    printf("Sorted Array: \n");
+    printArray(arr, n);
+
+    // Fill the matrix in the spiral
+    int mat[100][100] = {0}; // Initialize matrix with zeros
+    fillSpiralPattern(arr, N, M, mat);
+
+    // Print the resulting matrix.
+    printf("\nMatrix in Spiral Pattern:\n");
+    printMatrix(mat, N, M);
+
+    return 0;
+}
