@@ -1,0 +1,165 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <ctype.h>
+
+#define BUFFER_SIZE 10000
+
+char buffer[BUFFER_SIZE];
+
+void enterText() {
+    printf("Enter text: ");
+    char text[1000];
+    fgets(text, sizeof(text), stdin);
+    strcat(buffer, text);
+}
+
+void printText() {
+    printf("Your current text: ");
+    printf("%s", buffer);
+
+
+}
+
+void searchForWord() {
+    printf("Enter word to search: ");
+    char word[100];
+    fgets(word, sizeof(word), stdin);
+    word[strlen(word)-1] = '\0';
+
+    int count = 0;
+    char *tmp = buffer;
+    char prevChar, nextChar;
+
+    while((tmp = strstr(tmp, word)) != NULL) {
+        prevChar = (tmp == buffer) ? ' ' : *(tmp - 1);  // If at the start of the buffer, treat previous char as space
+        nextChar = *(tmp + strlen(word));
+        if (!isalpha(prevChar) && !isalpha(nextChar)) {
+            count++;
+        }
+        tmp += strlen(word);
+    }
+
+    printf("The word '%s' appeared %d times.\n", word, count);
+}
+
+
+
+void replaceWord() {
+    printf("Enter word to replace: ");
+    char word[100];
+    fgets(word, sizeof(word), stdin);
+    word[strlen(word)-1] = '\0';
+
+    printf("Enter new word: ");
+    char newWord[100];
+    fgets(newWord, sizeof(newWord), stdin);
+    newWord[strlen(newWord)-1] = '\0';
+
+    char *pos = strstr(buffer, word);
+    char prevChar, nextChar;
+
+    while(pos != NULL) {
+        prevChar = (pos == buffer) ? ' ' : *(pos - 1);  // If at the start of the buffer, treat previous char as space
+        nextChar = *(pos + strlen(word));  // Char after the found word
+
+        if ((!isalpha(prevChar)) && (!isalpha(nextChar))) {
+            int len = pos - buffer;
+            char tempBuffer[BUFFER_SIZE];
+            strcpy(tempBuffer, &buffer[len + strlen(word)]);
+            buffer[len] = '\0';
+            strcat(buffer, newWord);
+            strcat(buffer, tempBuffer);
+            pos = strstr(buffer, word);
+        } else {
+            pos += strlen(word);
+            pos = strstr(pos, word);  // Search for next occurrence from current position
+        }
+    }
+}
+
+void deleteBuffer() {
+    memset(buffer, 0, sizeof(buffer));
+}
+
+void saveToFile() {
+    printf("Enter filename to save: ");
+    char filename[100];
+    fgets(filename, sizeof(filename), stdin);
+    filename[strlen(filename)-1] = '\0';
+
+    FILE *file = fopen(filename, "w");
+    if(file == NULL) {
+        printf("Error opening file!\n");
+        return;
+    }
+
+    fputs(buffer, file);
+    fclose(file);
+    printf("File saved successfully.\n");
+}
+
+void loadFromFile() {
+    printf("Enter filename to load: ");
+    char filename[100];
+    fgets(filename, sizeof(filename), stdin);
+    filename[strlen(filename)-1] = '\0';
+
+    FILE *file = fopen(filename, "r");
+    if(file == NULL) {
+        printf("Error opening file!\n");
+        return;
+    }
+
+    fread(buffer, sizeof(char), BUFFER_SIZE, file);
+    fclose(file);
+    printf("File loaded successfully.\n");
+}
+
+int main() {
+    while(1) {
+        printf("1. Enter Text\n");
+        printf("2. Print text\n");
+        printf("3. Search for Word\n");
+        printf("4. Replace Word\n");
+        printf("5. Delete Buffer\n");
+        printf("6. Save to File\n");
+        printf("7. Load from File\n");
+        printf("8. Exit\n");
+        printf("Choose an option: ");
+
+        int choice;
+        scanf("%d", &choice);
+        while(getchar() != '\n');
+
+        switch(choice) {
+            case 1:
+                enterText();
+                break;
+            case 2:
+                printText();
+                break;
+            case 3:
+                searchForWord();
+                break;
+            case 4:
+                replaceWord();
+                break;
+            case 5:
+                deleteBuffer();
+                break;
+            case 6:
+                saveToFile();
+                break;
+            case 7:
+                loadFromFile();
+                break;
+            case 8:
+                exit(0);
+            default:
+                printf("Invalid option. Try again.\n");
+        }
+    }
+
+    return 0;
+}
