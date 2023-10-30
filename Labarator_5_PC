@@ -1,0 +1,206 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+typedef enum {
+    INT, FLOAT, STRING
+} DataType;
+
+typedef union {
+    int i;
+    float f;
+    char s[100];
+} Data;
+
+typedef struct Node {
+    Data data;
+    DataType type;
+    struct Node* next;
+} Node;
+
+typedef struct Stack {
+    Node* top;
+    unsigned int size;
+    unsigned int capacity;
+} Stack;
+
+Stack* createStack(unsigned int capacity) {
+    Stack* stack = (Stack*)malloc(sizeof(Stack));
+    if (!stack) {
+        fprintf(stderr, "Memory allocation failed\n");
+        exit(EXIT_FAILURE);
+    }
+    stack->top = NULL;
+    stack->size = 0;
+    stack->capacity = capacity;
+    return stack;
+}
+
+int isFull(Stack* stack) {
+    return stack->size == stack->capacity;
+}
+
+int isEmpty(Stack* stack) {
+    return stack->top == NULL;
+}
+
+int push(Stack* stack, Data data, DataType type) {
+    if(isFull(stack)) {
+        fprintf(stderr, "Stack is full. Cannot push more items\n");
+        return 0;
+    }
+    Node* newNode = (Node*)malloc(sizeof(Node));
+    if (!newNode) {
+        fprintf(stderr, "Memory allocation failed\n");
+        return 0;
+    }
+    newNode->data = data;
+    newNode->type = type;
+    newNode->next = stack->top;
+    stack->top = newNode;
+    stack->size++;
+    return 1;
+}
+
+Data pop(Stack* stack) {
+    if(isEmpty(stack)) {
+        fprintf(stderr, "Stack is empty. Cannot pop\n");
+        Data emptyData;
+        return emptyData;
+    }
+    Node* temp = stack->top;
+    Data poppedData = temp->data;
+    stack->top = stack->top->next;
+    free(temp);
+    stack->size--;
+    return poppedData;
+}
+
+Data peek(Stack* stack) {
+    if(isEmpty(stack)) {
+        fprintf(stderr, "Stack is empty. Cannot peek\n");
+        Data emptyData;
+        return emptyData;
+    }
+    return stack->top->data;
+}
+
+void display(Stack* stack) {
+    if(isEmpty(stack)) {
+        printf("The stack is empty\n");
+        return;
+    }
+    Node* temp = stack->top;
+    while(temp) {
+        switch(temp->type) {
+            case INT:
+                printf("%d ", temp->data.i);
+                break;
+            case FLOAT:
+                printf("%.2f ", temp->data.f);
+                break;
+            case STRING:
+                printf("%s ", temp->data.s);
+                break;
+        }
+        temp = temp->next;
+    }
+    printf("\n");
+}
+
+void clearStack(Stack* stack) {
+    while (!isEmpty(stack)) {
+        pop(stack);
+    }
+}
+
+int main() {
+    Stack* stack = createStack(10);
+
+    while(1) {
+        printf("Stack Operations Menu:\n");
+        printf("1. Push\n");
+        printf("2. Pop\n");
+        printf("3. Peek\n");
+        printf("4. IsEmpty\n");
+        printf("5. IsFull\n");
+        printf("6. Display\n");
+        printf("7. Exit\n");
+
+        int choice;
+        printf("Enter your choice: ");
+        scanf("%d", &choice);
+        getchar();
+
+        switch(choice) {
+            case 1: {
+                printf("Choose type (1-Int, 2-Float, 3-String): ");
+                int typeChoice;
+                scanf("%d", &typeChoice);
+                getchar();
+
+                Data inputData;
+                switch(typeChoice) {
+                    case 1:
+                        printf("Enter an integer value: ");
+                        scanf("%d", &inputData.i);
+                        if (!push(stack, inputData, INT)) {
+                            printf("Failed to push data onto the stack.\n");
+                        }
+                        break;
+                    case 2:
+                        printf("Enter a float value: ");
+                        scanf("%f", &inputData.f);
+                        if (!push(stack, inputData, FLOAT)) {
+                            printf("Failed to push data onto the stack.\n");
+                        }
+                        break;
+                    case 3:
+                        printf("Enter a string: ");
+                        fgets(inputData.s, sizeof(inputData.s), stdin);
+                        inputData.s[strcspn(inputData.s, "\n")] = '\0';
+                        if (!push(stack, inputData, STRING)) {
+                            printf("Failed to push data onto the stack.\n");
+                        }
+                        break;
+                    default:
+                        printf("Invalid type choice.\n");
+                        continue;
+                }
+                break;
+            }
+            case 2:
+                pop(stack);
+                break;
+            case 3:
+                peek(stack);
+                break;
+            case 4:
+                if(isEmpty(stack)) {
+                    printf("The stack is empty.\n");
+                } else {
+                    printf("The stack is not empty.\n");
+                }
+                break;
+            case 5:
+                if(isFull(stack)) {
+                    printf("The stack is full.\n");
+                } else {
+                    printf("The stack is not full.\n");
+                }
+                break;
+            case 6:
+                printf("Stack Contents: ");
+                display(stack);
+                break;
+            case 7:
+                printf("Exiting the program.\n");
+                clearStack(stack);
+                free(stack);
+                return 0;
+            default:
+                printf("Invalid choice.\n");
+        }
+    }
+    return 0;
+}
